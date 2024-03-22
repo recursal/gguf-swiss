@@ -19,3 +19,8 @@ Reads a GGUF file, and outputs a summary of its metadata and tensors to stdout, 
 
 Model packaging utility.
 Converts model files to GGUF.
+
+## Safety
+
+An effort has been made to avoid unsafe code and unsafe dependencies.
+The core GGUF reader/writer library is entirely safe Rust code.

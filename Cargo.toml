@@ -15,4 +15,3 @@ safetensors = "0.4.2"
 serde = "1.0"
 serde_json = "1.0"
 gguf-swiss = { path = "crates/gguf-swiss" }
-stewart = { path = "crates/stewart" }
