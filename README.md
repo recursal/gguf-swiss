@@ -6,8 +6,8 @@ A small set of command line utilities and libraries for working with GGUF files.
 
 ### gguf-swiss-info
 
-Model information printer utility.
-Reads a GGUF file, and outputs a summary of its metadata and tensors to stdout.
+Model information reader utility.
+Reads a GGUF file, and outputs a summary of its metadata and tensors to stdout, in markdown format.
 
 ### gguf-swiss-pack
 

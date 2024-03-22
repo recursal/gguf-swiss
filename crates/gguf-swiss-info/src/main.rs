@@ -60,7 +60,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-/// GGUF Swiss Army Knife, model information printer utility.
+/// GGUF Swiss Army Knife, model information reader utility.
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
