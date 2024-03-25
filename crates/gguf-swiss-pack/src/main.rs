@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::{bail, Context, Error};
 use clap::Parser;
-use gguf_swiss::{align_offset, Header, TensorDimensions, TensorInfo, TensorType};
+use gguf_swiss::{align_offset, Header, MetadataValue, TensorDimensions, TensorInfo, TensorType};
 
 use crate::{
     manifest::{read_manifest, Manifest},
@@ -82,7 +82,8 @@ fn convert_metadata(header: &mut Header, manifest: &Manifest) -> Result<(), Erro
             bail!("unsupported metadata value for {:?}", key)
         };
 
-        header.metadata.insert(key.clone(), value.to_string());
+        let value = MetadataValue::String(value.to_string());
+        header.metadata.insert(key.clone(), value);
     }
 
     Ok(())

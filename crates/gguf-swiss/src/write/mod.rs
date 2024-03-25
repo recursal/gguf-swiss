@@ -2,11 +2,11 @@ mod primitives;
 
 use std::io::Write;
 
-use anyhow::Error;
+use anyhow::{bail, Error};
 
 use crate::{
     write::primitives::{write_string, write_u32, write_u64},
-    Header, MetadataType, TensorInfo, MAGIC_NUMBER,
+    Header, MetadataType, MetadataValue, TensorInfo, MAGIC_NUMBER,
 };
 
 pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Error> {
@@ -29,8 +29,17 @@ pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Erro
     Ok(())
 }
 
-pub fn write_metadata_entry(writer: &mut impl Write, key: &str, value: &str) -> Result<(), Error> {
+pub fn write_metadata_entry(
+    writer: &mut impl Write,
+    key: &str,
+    value: &MetadataValue,
+) -> Result<(), Error> {
     write_string(writer, key)?;
+
+    // TODO: Support different value types
+    let MetadataValue::String(value) = value else {
+        bail!("unsupported metadata value to write")
+    };
 
     write_u32(writer, MetadataType::String as u32)?;
     write_string(writer, value)?;

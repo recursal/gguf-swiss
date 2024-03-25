@@ -13,8 +13,42 @@ const MAGIC_NUMBER: [u8; 4] = [0x47, 0x47, 0x55, 0x46];
 
 #[derive(Debug, Default, Clone)]
 pub struct Header {
-    pub metadata: HashMap<String, String>,
+    pub metadata: HashMap<String, MetadataValue>,
     pub tensors: HashMap<String, TensorInfo>,
+}
+
+#[derive(Debug, Clone)]
+pub enum MetadataValue {
+    UInt8(u8),
+    Int8(i8),
+    UInt16(u16),
+    Int16(i16),
+    UInt32(u32),
+    Int32(i32),
+    Float32(f32),
+    Bool(bool),
+    String(String),
+    Array(MetadataArray),
+    UInt64(u64),
+    Int64(i64),
+    Float64(f64),
+}
+
+#[derive(Debug, Clone)]
+pub enum MetadataArray {
+    UInt8(Vec<u8>),
+    Int8(Vec<i8>),
+    UInt16(Vec<u16>),
+    Int16(Vec<i16>),
+    UInt32(Vec<u32>),
+    Int32(Vec<i32>),
+    Float32(Vec<f32>),
+    Bool(Vec<bool>),
+    String(Vec<String>),
+    Array(Vec<MetadataArray>),
+    UInt64(Vec<u64>),
+    Int64(Vec<i64>),
+    Float64(Vec<f64>),
 }
 
 #[repr(u32)]

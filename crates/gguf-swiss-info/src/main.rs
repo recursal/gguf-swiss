@@ -2,7 +2,7 @@ use std::fs::File;
 
 use anyhow::{bail, Context, Error};
 use clap::Parser;
-use gguf_swiss::Header;
+use gguf_swiss::{Header, MetadataValue};
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
@@ -12,7 +12,7 @@ fn main() -> Result<(), Error> {
     let header = gguf_swiss::read_header(&mut file).context("failed to read gguf header")?;
 
     let architecture = header.metadata.get("general.architecture");
-    let Some(architecture) = architecture else {
+    let Some(MetadataValue::String(architecture)) = architecture else {
         bail!("required key \"general.architecture\" missing from model")
     };
 
@@ -37,6 +37,7 @@ fn main() -> Result<(), Error> {
 
     println!("\n## Metadata");
     for (key, value) in header.metadata {
+        let value = format_value(&value);
         println!("`{}`: {}", key, value);
     }
 
@@ -73,9 +74,31 @@ const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn get_metadata(header: &Header, key: &str, default: &str) -> String {
-    header
-        .metadata
-        .get(key)
-        .cloned()
-        .unwrap_or(default.to_string())
+    let Some(value) = header.metadata.get(key) else {
+        return default.to_string();
+    };
+
+    let MetadataValue::String(value) = value else {
+        return default.to_string();
+    };
+
+    value.clone()
+}
+
+fn format_value(value: &MetadataValue) -> String {
+    match value {
+        MetadataValue::UInt8(value) => value.to_string(),
+        MetadataValue::Int8(value) => value.to_string(),
+        MetadataValue::UInt16(value) => value.to_string(),
+        MetadataValue::Int16(value) => value.to_string(),
+        MetadataValue::UInt32(value) => value.to_string(),
+        MetadataValue::Int32(value) => value.to_string(),
+        MetadataValue::Float32(value) => value.to_string(),
+        MetadataValue::Bool(value) => value.to_string(),
+        MetadataValue::String(value) => format!("{:?}", value),
+        MetadataValue::Array(_value) => "[array]".to_string(),
+        MetadataValue::UInt64(value) => value.to_string(),
+        MetadataValue::Int64(value) => value.to_string(),
+        MetadataValue::Float64(value) => value.to_string(),
+    }
 }

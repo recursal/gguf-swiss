@@ -1,15 +1,16 @@
-pub mod primitives;
+mod primitives;
+mod value;
 
 use std::{collections::HashMap, io::Read};
 
 use anyhow::{bail, Context, Error};
 
 use crate::{
-    read::primitives::{
-        read_f32, read_f64, read_i16, read_i32, read_i64, read_i8, read_string, read_u16, read_u32,
-        read_u64, read_u8,
+    read::{
+        primitives::{read_string, read_u32, read_u64},
+        value::read_metadata_value,
     },
-    Header, MetadataType, TensorDimensions, TensorInfo, TensorType, MAGIC_NUMBER,
+    Header, MetadataValue, TensorDimensions, TensorInfo, TensorType, MAGIC_NUMBER,
 };
 
 /// Read the header of a GGUF file reader.
@@ -59,61 +60,12 @@ pub fn read_header(reader: &mut impl Read) -> Result<Header, Error> {
     Ok(value)
 }
 
-pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, String), Error> {
+pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataValue), Error> {
     let key = read_string(reader)?;
 
-    let value_type_index = read_u32(reader)?;
-    let value_type = MetadataType::from_u32(value_type_index).context("invalid type")?;
-
-    let value = read_metadata_value(reader, value_type, 0)?;
+    let value = read_metadata_value(reader)?;
 
     Ok((key, value))
-}
-
-fn read_metadata_value(
-    reader: &mut impl Read,
-    value_type: MetadataType,
-    depth: usize,
-) -> Result<String, Error> {
-    if depth > 2 {
-        bail!("excessive metadata depth");
-    }
-
-    let value = match value_type {
-        MetadataType::UInt8 => read_u8(reader)?.to_string(),
-        MetadataType::Int8 => read_i8(reader)?.to_string(),
-        MetadataType::UInt16 => read_u16(reader)?.to_string(),
-        MetadataType::Int16 => read_i16(reader)?.to_string(),
-        MetadataType::UInt32 => read_u32(reader)?.to_string(),
-        MetadataType::Int32 => read_i32(reader)?.to_string(),
-        MetadataType::Float32 => read_f32(reader)?.to_string(),
-        MetadataType::Bool => read_u8(reader)?.to_string(),
-        MetadataType::String => read_string(reader)?,
-        MetadataType::Array => {
-            // TODO: Placeholder
-
-            let value_type_index = read_u32(reader)?;
-            let value_type = MetadataType::from_u32(value_type_index).context("invalid type")?;
-
-            let length = read_u64(reader)?;
-
-            // This is a very large value, but it's necessary for some vocabs
-            if length > 524288 {
-                bail!("excessive array size");
-            }
-
-            for _ in 0..length {
-                read_metadata_value(reader, value_type, depth + 1)?;
-            }
-
-            "[array]".to_string()
-        }
-        MetadataType::UInt64 => read_u64(reader)?.to_string(),
-        MetadataType::Int64 => read_i64(reader)?.to_string(),
-        MetadataType::Float64 => read_f64(reader)?.to_string(),
-    };
-
-    Ok(value)
 }
 
 pub fn read_tensor_info(reader: &mut impl Read) -> Result<(String, TensorInfo), Error> {

@@ -90,6 +90,10 @@ pub fn read_f64(reader: &mut impl Read) -> Result<f64, Error> {
     Ok(value)
 }
 
+pub fn read_bool(reader: &mut impl Read) -> Result<bool, Error> {
+    Ok(read_u8(reader)? != 0)
+}
+
 pub fn read_string(reader: &mut impl Read) -> Result<String, Error> {
     let length = read_u64(reader)? as usize;
 

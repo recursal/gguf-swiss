@@ -16,7 +16,6 @@
         ],
         "entries": {
             "token_emb.weight": {
-                "name": "",
                 "source": "rwkv.embeddings.weight",
                 "tensor_type": "F16",
                 "dimensions": [2048, 65536]
