@@ -1,0 +1,31 @@
+{
+    "manifest_version": 0,
+    "metadata": {
+        "general.architecture": "rwkv5",
+        "general.name": "RWKV5 World 1.5B",
+        "general.author": "Recursal AI",
+        "general.description": "Soaring past Transformers with 1 Trillion Tokens Across 100+ Languages!",
+        "general.license": "Apache-2.0"
+    },
+    "vocab": {
+        "source": "rwkv_vocab_v20230424.json"
+    },
+    "tensors": {
+        "sources": [
+            "model.safetensors"
+        ],
+        "entries": {
+            "token_emb.weight": {
+                "name": "",
+                "source": "rwkv.embeddings.weight",
+                "tensor_type": "F16",
+                "dimensions": [2048, 65536]
+            },
+            "blk.0.ln1.bias": {
+                "source": "rwkv.blocks.0.ln1.bias",
+                "tensor_type": "F16",
+                "dimensions": [2048]
+            }
+        }
+    }
+}

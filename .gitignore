@@ -1,2 +1,5 @@
 /target
 /.idea
+
+# Conversion outputs, we don't want to check these files in
+*.gguf

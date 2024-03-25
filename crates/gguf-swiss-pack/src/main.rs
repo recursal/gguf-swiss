@@ -23,23 +23,27 @@ fn main() -> Result<(), Error> {
     let manifest_path = PathBuf::from(args.manifest);
     let manifest = read_manifest(&manifest_path).context("failed to load packaging manifest")?;
 
-    let mut root_path = manifest_path.clone();
-    root_path.pop();
+    // Validate model path
+    let model_path = PathBuf::from(args.model);
+    if !model_path.is_dir() {
+        bail!("model path is not a valid directory");
+    }
 
-    let mut target = File::create(&args.target)?;
-
+    let mut target = File::create(&args.output)?;
     let mut tensor_tasks = Vec::new();
 
+    // Generate and write the GGUF header
     write_header(&mut target, &manifest, &mut tensor_tasks)?;
     let data_start = write_padding(&mut target)?;
 
     // Read input safetensors header
-    // TODO: Support more than one source
+    // TODO: Support more than one source, and different formats
     let source = &manifest.tensors.sources[0];
-    let source_path = root_path.join(source);
+    let source_path = model_path.join(source);
     let mut source_file = File::open(source_path).context("failed to open source file")?;
     let source_header = safetensors::read_header(&mut source_file)?;
 
+    // Handle all tensor conversion tasks
     for task in tensor_tasks {
         run_tensor_task(
             &mut target,
@@ -220,10 +224,15 @@ fn read_source_scalars(
 #[command(version, about)]
 struct Args {
     /// Path to the packaging manifest to read.
+    #[arg(long)]
     manifest: String,
 
+    /// Path to the model directory to read.
+    #[arg(long)]
+    model: String,
+
     /// Path to the output file.
-    target: String,
+    output: String,
 }
 
 struct TensorTask {
