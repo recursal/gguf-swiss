@@ -11,7 +11,9 @@ use crate::{
     MetadataArray, MetadataType, MetadataValue,
 };
 
-pub fn read_metadata_value(reader: &mut impl Read) -> Result<MetadataValue, Error> {
+pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataValue), Error> {
+    let key = read_string(reader)?;
+
     let type_index = read_u32(reader)?;
     let ty = MetadataType::from_u32(type_index).context("invalid type")?;
 
@@ -31,7 +33,7 @@ pub fn read_metadata_value(reader: &mut impl Read) -> Result<MetadataValue, Erro
         MetadataType::Float64 => MetadataValue::Float64(read_f64(reader)?),
     };
 
-    Ok(value)
+    Ok((key, value))
 }
 
 fn read_metadata_array(reader: &mut impl Read, depth: usize) -> Result<MetadataArray, Error> {

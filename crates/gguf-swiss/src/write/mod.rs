@@ -1,12 +1,16 @@
+mod metadata;
 mod primitives;
 
 use std::io::Write;
 
-use anyhow::{bail, Error};
+use anyhow::Error;
 
 use crate::{
-    write::primitives::{write_string, write_u32, write_u64},
-    Header, MetadataType, MetadataValue, TensorInfo, MAGIC_NUMBER,
+    write::{
+        metadata::write_metadata_entry,
+        primitives::{write_string, write_u32, write_u64},
+    },
+    Header, TensorInfo, MAGIC_NUMBER,
 };
 
 pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Error> {
@@ -29,29 +33,7 @@ pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Erro
     Ok(())
 }
 
-pub fn write_metadata_entry(
-    writer: &mut impl Write,
-    key: &str,
-    value: &MetadataValue,
-) -> Result<(), Error> {
-    write_string(writer, key)?;
-
-    // TODO: Support different value types
-    let MetadataValue::String(value) = value else {
-        bail!("unsupported metadata value to write")
-    };
-
-    write_u32(writer, MetadataType::String as u32)?;
-    write_string(writer, value)?;
-
-    Ok(())
-}
-
-pub fn write_tensor_info(
-    writer: &mut impl Write,
-    key: &str,
-    value: &TensorInfo,
-) -> Result<(), Error> {
+fn write_tensor_info(writer: &mut impl Write, key: &str, value: &TensorInfo) -> Result<(), Error> {
     write_string(writer, key)?;
 
     write_u32(writer, value.dimensions.count() as u32)?;

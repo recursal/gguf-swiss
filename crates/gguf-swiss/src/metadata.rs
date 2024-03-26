@@ -56,6 +56,26 @@ pub enum MetadataValue {
     Float64(f64),
 }
 
+impl MetadataValue {
+    pub fn ty(&self) -> MetadataType {
+        match self {
+            Self::UInt8(_) => MetadataType::UInt8,
+            Self::Int8(_) => MetadataType::Int8,
+            Self::UInt16(_) => MetadataType::UInt16,
+            Self::Int16(_) => MetadataType::Int16,
+            Self::UInt32(_) => MetadataType::UInt32,
+            Self::Int32(_) => MetadataType::Int32,
+            Self::Float32(_) => MetadataType::Float32,
+            Self::Bool(_) => MetadataType::Bool,
+            Self::String(_) => MetadataType::String,
+            Self::Array(_) => MetadataType::Array,
+            Self::UInt64(_) => MetadataType::UInt64,
+            Self::Int64(_) => MetadataType::Int64,
+            Self::Float64(_) => MetadataType::Float64,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum MetadataArray {
     UInt8(Vec<u8>),
@@ -71,4 +91,24 @@ pub enum MetadataArray {
     UInt64(Vec<u64>),
     Int64(Vec<i64>),
     Float64(Vec<f64>),
+}
+
+impl MetadataArray {
+    pub fn ty(&self) -> MetadataType {
+        match self {
+            Self::UInt8(_) => MetadataType::UInt8,
+            Self::Int8(_) => MetadataType::Int8,
+            Self::UInt16(_) => MetadataType::UInt16,
+            Self::Int16(_) => MetadataType::Int16,
+            Self::UInt32(_) => MetadataType::UInt32,
+            Self::Int32(_) => MetadataType::Int32,
+            Self::Float32(_) => MetadataType::Float32,
+            Self::Bool(_) => MetadataType::Bool,
+            Self::String(_) => MetadataType::String,
+            Self::Array(_) => MetadataType::Array,
+            Self::UInt64(_) => MetadataType::UInt64,
+            Self::Int64(_) => MetadataType::Int64,
+            Self::Float64(_) => MetadataType::Float64,
+        }
+    }
 }

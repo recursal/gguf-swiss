@@ -7,10 +7,10 @@ use anyhow::{bail, Context, Error};
 
 use crate::{
     read::{
-        metadata::read_metadata_value,
+        metadata::read_metadata_entry,
         primitives::{read_string, read_u32, read_u64},
     },
-    Header, MetadataValue, TensorDimensions, TensorInfo, TensorType, MAGIC_NUMBER,
+    Header, TensorDimensions, TensorInfo, TensorType, MAGIC_NUMBER,
 };
 
 /// Read the header of a GGUF file reader.
@@ -60,15 +60,7 @@ pub fn read_header(reader: &mut impl Read) -> Result<Header, Error> {
     Ok(value)
 }
 
-pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataValue), Error> {
-    let key = read_string(reader)?;
-
-    let value = read_metadata_value(reader)?;
-
-    Ok((key, value))
-}
-
-pub fn read_tensor_info(reader: &mut impl Read) -> Result<(String, TensorInfo), Error> {
+fn read_tensor_info(reader: &mut impl Read) -> Result<(String, TensorInfo), Error> {
     let name = read_string(reader)?;
 
     // Read the tensor dimensions
