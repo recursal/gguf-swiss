@@ -1,5 +1,5 @@
+mod metadata;
 mod primitives;
-mod value;
 
 use std::{collections::HashMap, io::Read};
 
@@ -7,8 +7,8 @@ use anyhow::{bail, Context, Error};
 
 use crate::{
     read::{
+        metadata::read_metadata_value,
         primitives::{read_string, read_u32, read_u64},
-        value::read_metadata_value,
     },
     Header, MetadataValue, TensorDimensions, TensorInfo, TensorType, MAGIC_NUMBER,
 };
