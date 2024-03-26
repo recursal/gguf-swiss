@@ -27,7 +27,7 @@ pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataVa
         MetadataType::Float32 => MetadataValue::Float32(read_f32(reader)?),
         MetadataType::Bool => MetadataValue::Bool(read_u8(reader)? != 0),
         MetadataType::String => MetadataValue::String(read_string(reader)?),
-        MetadataType::Array => MetadataValue::Array(read_metadata_array(reader, 0)?),
+        MetadataType::Array => MetadataValue::Array(read_array(reader, 0)?),
         MetadataType::UInt64 => MetadataValue::UInt64(read_u64(reader)?),
         MetadataType::Int64 => MetadataValue::Int64(read_i64(reader)?),
         MetadataType::Float64 => MetadataValue::Float64(read_f64(reader)?),
@@ -36,7 +36,7 @@ pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataVa
     Ok((key, value))
 }
 
-fn read_metadata_array(reader: &mut impl Read, depth: usize) -> Result<MetadataArray, Error> {
+fn read_array(reader: &mut impl Read, depth: usize) -> Result<MetadataArray, Error> {
     if depth > 2 {
         bail!("excessive metadata depth");
     }
@@ -62,7 +62,7 @@ fn read_metadata_array(reader: &mut impl Read, depth: usize) -> Result<MetadataA
         MetadataType::Bool => MetadataArray::Bool(array_inner(length, reader, read_bool)?),
         MetadataType::String => MetadataArray::String(array_inner(length, reader, read_string)?),
         MetadataType::Array => {
-            let read_value = |reader: &mut _| read_metadata_array(reader, depth + 1);
+            let read_value = |reader: &mut _| read_array(reader, depth + 1);
             let array = array_inner(length, reader, read_value)?;
             MetadataArray::Array(array)
         }
@@ -74,10 +74,10 @@ fn read_metadata_array(reader: &mut impl Read, depth: usize) -> Result<MetadataA
     Ok(value)
 }
 
-fn array_inner<T, F, R>(length: u64, reader: &mut R, mut read: F) -> Result<Vec<T>, Error>
+fn array_inner<T, R, F>(length: u64, reader: &mut R, mut read: F) -> Result<Vec<T>, Error>
 where
-    F: FnMut(&mut R) -> Result<T, Error>,
     R: Read,
+    F: FnMut(&mut R) -> Result<T, Error>,
 {
     let mut data = Vec::with_capacity(length as usize);
 
