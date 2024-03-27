@@ -16,6 +16,7 @@ const MAGIC_NUMBER: [u8; 4] = [0x47, 0x47, 0x55, 0x46];
 
 #[derive(Debug, Default, Clone)]
 pub struct Header {
+    // TODO: Technically GGUF files can contain duplicates, so just a HashMap alone doesn't fit
     pub metadata: HashMap<String, MetadataValue>,
     pub tensors: HashMap<String, TensorInfo>,
 }
