@@ -26,15 +26,15 @@ pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Erro
         write_metadata_entry(writer, key, value)?;
     }
 
-    for (key, value) in &header.tensors {
-        write_tensor_info(writer, key, value)?;
+    for value in &header.tensors {
+        write_tensor_info(writer, value)?;
     }
 
     Ok(())
 }
 
-fn write_tensor_info(writer: &mut impl Write, key: &str, value: &TensorInfo) -> Result<(), Error> {
-    write_string(writer, key)?;
+fn write_tensor_info(writer: &mut impl Write, value: &TensorInfo) -> Result<(), Error> {
+    write_string(writer, &value.name)?;
 
     write_u32(writer, value.dimensions.count() as u32)?;
     for i in 0..value.dimensions.count() {

@@ -3,8 +3,6 @@ mod metadata;
 mod read;
 mod write;
 
-use std::collections::HashMap;
-
 pub use crate::{
     dimensions::TensorDimensions,
     metadata::{MetadataArray, MetadataType, MetadataValue},
@@ -16,14 +14,16 @@ const MAGIC_NUMBER: [u8; 4] = [0x47, 0x47, 0x55, 0x46];
 
 #[derive(Debug, Default, Clone)]
 pub struct Header {
-    // TODO: Technically GGUF files can contain duplicates, so just a HashMap alone doesn't fit
-    pub metadata: HashMap<String, MetadataValue>,
-    pub tensors: HashMap<String, TensorInfo>,
+    pub metadata: Vec<(String, MetadataValue)>,
+    pub tensors: Vec<TensorInfo>,
 }
 
 /// Info about a tensor inside a GGUF file.
 #[derive(Debug, Clone)]
 pub struct TensorInfo {
+    /// The identifying name of the tensor.
+    pub name: String,
+
     /// The encoding of the tensor's values.
     pub tensor_type: TensorType,
 

@@ -39,7 +39,8 @@ fn main() -> Result<(), Error> {
     let mut tensors_source_file =
         File::open(tensors_source_file_path).context("failed to open tensors source")?;
 
-    // Prepare conversion info
+    // Prepare conversion info, gathering and validating the information necessary to perform
+    // conversion
     println!("preparing conversion");
     let mut info = ConvertInfo::default();
     prepare_metadata(&mut info, &manifest)?;

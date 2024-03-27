@@ -1,7 +1,7 @@
 mod metadata;
 mod primitives;
 
-use std::{collections::HashMap, io::Read};
+use std::io::Read;
 
 use anyhow::{bail, Context, Error};
 
@@ -43,24 +43,24 @@ pub fn read_header(reader: &mut impl Read) -> Result<Header, Error> {
     }
 
     // Read metadata KVs
-    let mut metadata = HashMap::new();
+    let mut metadata = Vec::new();
     for _ in 0..metadata_kv_count {
         let (key, value) = read_metadata_entry(reader).context("failed to read metadata entry")?;
-        metadata.insert(key, value);
+        metadata.push((key, value));
     }
 
     // Read tensor info
-    let mut tensors = HashMap::new();
+    let mut tensors = Vec::new();
     for _ in 0..tensor_count {
-        let (key, value) = read_tensor_info(reader).context("failed to read tensor info")?;
-        tensors.insert(key, value);
+        let value = read_tensor_info(reader).context("failed to read tensor info")?;
+        tensors.push(value);
     }
 
     let value = Header { metadata, tensors };
     Ok(value)
 }
 
-fn read_tensor_info(reader: &mut impl Read) -> Result<(String, TensorInfo), Error> {
+fn read_tensor_info(reader: &mut impl Read) -> Result<TensorInfo, Error> {
     let name = read_string(reader)?;
 
     // Read the tensor dimensions
@@ -84,9 +84,10 @@ fn read_tensor_info(reader: &mut impl Read) -> Result<(String, TensorInfo), Erro
     let offset = read_u64(reader)?;
 
     let value = TensorInfo {
+        name,
         tensor_type,
         dimensions,
         offset,
     };
-    Ok((name, value))
+    Ok(value)
 }
