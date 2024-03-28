@@ -80,9 +80,6 @@ pub fn write_string(writer: &mut impl Write, data: &str) -> Result<(), Error> {
     if data.bytes().len() > 65535 {
         bail!("invalid string: too long");
     }
-    if !data.is_ascii() {
-        bail!("invalid string: not ascii");
-    }
 
     write_u64(writer, data.bytes().len() as u64)?;
     writer.write_all(data.as_bytes())?;

@@ -18,6 +18,16 @@ pub struct Header {
     pub tensors: Vec<TensorInfo>,
 }
 
+impl Header {
+    pub fn find_metadata(&self, key: &str) -> Option<&MetadataValue> {
+        self.metadata.iter().find(|(k, _)| k == key).map(|(_, v)| v)
+    }
+
+    pub fn find_tensor(&self, key: &str) -> Option<&TensorInfo> {
+        self.tensors.iter().find(|v| v.name == key)
+    }
+}
+
 /// Info about a tensor inside a GGUF file.
 #[derive(Debug, Clone)]
 pub struct TensorInfo {

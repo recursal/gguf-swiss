@@ -11,7 +11,7 @@ fn main() -> Result<(), Error> {
 
     let header = gguf_swiss::read_header(&mut file).context("failed to read gguf header")?;
 
-    let architecture = header.metadata.get("general.architecture");
+    let architecture = header.find_metadata("general.architecture");
     let Some(MetadataValue::String(architecture)) = architecture else {
         bail!("required key \"general.architecture\" missing from model")
     };
@@ -43,11 +43,11 @@ fn main() -> Result<(), Error> {
 
     println!("\n## Tensors");
     let mut tensors: Vec<_> = header.tensors.iter().collect();
-    tensors.sort_by_key(|(k, _)| k.as_str());
-    for (key, value) in tensors {
+    tensors.sort_by_key(|v| v.name.as_str());
+    for tensor in tensors {
         println!(
             "`{}`: `{{type: {:?}, dimensions: {}, offset: {}}}`",
-            key, value.tensor_type, value.dimensions, value.offset
+            tensor.name, tensor.tensor_type, tensor.dimensions, tensor.offset
         );
     }
 
@@ -74,7 +74,7 @@ const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn get_metadata(header: &Header, key: &str, default: &str) -> String {
-    let Some(value) = header.metadata.get(key) else {
+    let Some(value) = header.find_metadata(key) else {
         return default.to_string();
     };
 
@@ -96,7 +96,7 @@ fn format_value(value: &MetadataValue) -> String {
         MetadataValue::Float32(value) => value.to_string(),
         MetadataValue::Bool(value) => value.to_string(),
         MetadataValue::String(value) => format!("{:?}", value),
-        MetadataValue::Array(_value) => "[array]".to_string(),
+        MetadataValue::Array(value) => format!("[{:?}; {}]", value.ty(), value.len()),
         MetadataValue::UInt64(value) => value.to_string(),
         MetadataValue::Int64(value) => value.to_string(),
         MetadataValue::Float64(value) => value.to_string(),

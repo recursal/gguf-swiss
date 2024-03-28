@@ -25,16 +25,19 @@ pub struct Manifest {
     /// Metadata to be inserted, in addition to generated values.
     pub metadata: HashMap<String, Value>,
 
-    /// Vocabulary source data to be processed.
-    pub vocab: VocabManifest,
+    /// Tokenizer source data to be processed.
+    pub tokenizer: TokenizerManifest,
 
     /// Tensors source data to be processed.
     pub tensors: TensorsManifest,
 }
 
 #[derive(Deserialize, Debug)]
-pub struct VocabManifest {
+pub struct TokenizerManifest {
     pub source: String,
+
+    #[serde(rename = "type")]
+    pub ty: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -47,6 +50,10 @@ pub struct TensorsManifest {
 #[derive(Deserialize, Debug)]
 pub struct TensorManifest {
     pub source: String,
-    pub tensor_type: String,
+
+    #[serde(rename = "type")]
+    pub ty: String,
+
+    // TODO: Infer dimensions from source.
     pub dimensions: Vec<u64>,
 }

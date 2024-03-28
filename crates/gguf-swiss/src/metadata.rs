@@ -111,4 +111,22 @@ impl MetadataArray {
             Self::Float64(_) => MetadataType::Float64,
         }
     }
+
+    pub fn len(&self) -> usize {
+        match self {
+            Self::UInt8(v) => v.len(),
+            Self::Int8(v) => v.len(),
+            Self::UInt16(v) => v.len(),
+            Self::Int16(v) => v.len(),
+            Self::UInt32(v) => v.len(),
+            Self::Int32(v) => v.len(),
+            Self::Float32(v) => v.len(),
+            Self::Bool(v) => v.len(),
+            Self::String(v) => v.len(),
+            Self::Array(v) => v.len(),
+            Self::UInt64(v) => v.len(),
+            Self::Int64(v) => v.len(),
+            Self::Float64(v) => v.len(),
+        }
+    }
 }

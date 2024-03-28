@@ -4,22 +4,20 @@ use std::{
 };
 
 use anyhow::{Context, Error};
-use gguf_swiss::{align_offset, Header, MetadataValue, TensorDimensions, TensorInfo, TensorType};
+use gguf_swiss::{align_offset, TensorDimensions};
 
 use crate::safetensors::{self, StHeader};
 
 pub fn convert(
     output: &mut File,
     tensors_source_file: &mut File,
-    info: &ConvertInfo,
+    tensors: &[ConvertTensorInfo],
 ) -> Result<(), Error> {
-    // Generate and write the GGUF header
-    write_header(output, info)?;
     let data_start = write_padding(output)?;
 
     // Handle all tensor conversion tasks
     let source_header = safetensors::read_header(tensors_source_file)?;
-    for tensor in &info.tensors {
+    for tensor in tensors {
         convert_tensor(
             output,
             data_start,
@@ -27,35 +25,6 @@ pub fn convert(
             &source_header,
             &tensor,
         )?;
-    }
-
-    Ok(())
-}
-
-fn write_header(target: &mut File, info: &ConvertInfo) -> Result<(), Error> {
-    println!("writing header");
-
-    let mut header = Header::default();
-
-    header.metadata = info.metadata.clone();
-    apply_header_tensors(&mut header, info)?;
-
-    // Write the prepared header
-    gguf_swiss::write_header(target, &header)?;
-
-    Ok(())
-}
-
-fn apply_header_tensors(header: &mut Header, info: &ConvertInfo) -> Result<(), Error> {
-    for tensor in &info.tensors {
-        // Record the tensor in the metadata
-        let info = TensorInfo {
-            name: tensor.name.clone(),
-            tensor_type: TensorType::F16,
-            dimensions: tensor.dimensions,
-            offset: tensor.offset,
-        };
-        header.tensors.push(info);
     }
 
     Ok(())
@@ -155,12 +124,6 @@ fn write_scalars(
     target.write_all(&target_data)?;
 
     Ok(())
-}
-
-#[derive(Default)]
-pub struct ConvertInfo {
-    pub metadata: Vec<(String, MetadataValue)>,
-    pub tensors: Vec<ConvertTensorInfo>,
 }
 
 pub struct ConvertTensorInfo {

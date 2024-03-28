@@ -2,14 +2,16 @@ mod convert;
 mod manifest;
 mod safetensors;
 
-use std::{fs::File, path::PathBuf};
+use std::{collections::HashMap, fs::File, path::PathBuf};
 
 use anyhow::{bail, Context, Error};
 use clap::Parser;
-use gguf_swiss::{align_offset, MetadataValue, TensorDimensions};
+use gguf_swiss::{
+    align_offset, Header, MetadataArray, MetadataValue, TensorDimensions, TensorInfo, TensorType,
+};
 
 use crate::{
-    convert::{ConvertInfo, ConvertTensorInfo},
+    convert::ConvertTensorInfo,
     manifest::{read_manifest, Manifest},
 };
 
@@ -42,12 +44,43 @@ fn main() -> Result<(), Error> {
     // Prepare conversion info, gathering and validating the information necessary to perform
     // conversion
     println!("preparing conversion");
-    let mut info = ConvertInfo::default();
-    prepare_metadata(&mut info, &manifest)?;
-    prepare_tensors(&mut info, &manifest)?;
+    let mut metadata = prepare_metadata(&manifest)?;
+    let tensors = prepare_tensors(&manifest)?;
 
-    // Perform conversion
-    convert::convert(&mut output, &mut tensors_source_file, &info)?;
+    // Load tokenizer
+    println!("loading tokenizer");
+    let vocab_file_path = model_path.join(&manifest.tokenizer.source);
+    let vocab_file = File::open(&vocab_file_path).context("failed to open tokenizer source")?;
+    let vocab_map: HashMap<String, u64> =
+        serde_json::from_reader(vocab_file).context("failed to parse tokenizer source")?;
+
+    // Convert vocab to flat list
+    let max_index = vocab_map
+        .values()
+        .cloned()
+        .max()
+        .context("no entries in vocab")?;
+    let mut vocab = vec![String::new(); max_index as usize];
+    for (token, index) in vocab_map {
+        vocab[index as usize - 1] = token;
+    }
+
+    // Insert tokenizer into metadata
+    metadata.push((
+        "tokenizer.ggml.model".to_string(),
+        MetadataValue::String("rwkv".to_string()),
+    ));
+    metadata.push((
+        "tokenizer.ggml.tokens".to_string(),
+        MetadataValue::Array(MetadataArray::String(vocab)),
+    ));
+
+    // Generate and write the GGUF header
+    write_header(&mut output, metadata, &tensors)?;
+
+    // Perform tensor conversion
+    println!("converting tensors");
+    convert::convert(&mut output, &mut tensors_source_file, &tensors)?;
 
     Ok(())
 }
@@ -70,24 +103,27 @@ struct Args {
     output: String,
 }
 
-fn prepare_metadata(info: &mut ConvertInfo, manifest: &Manifest) -> Result<(), Error> {
+fn prepare_metadata(manifest: &Manifest) -> Result<Vec<(String, MetadataValue)>, Error> {
+    let mut metadata = Vec::new();
+
     for (key, value) in &manifest.metadata {
         let Some(value) = value.as_str() else {
             bail!("unsupported metadata value for {:?}", key)
         };
 
         let value = MetadataValue::String(value.to_string());
-        info.metadata.push((key.clone(), value));
+        metadata.push((key.clone(), value));
     }
 
-    Ok(())
+    Ok(metadata)
 }
 
-fn prepare_tensors(info: &mut ConvertInfo, manifest: &Manifest) -> Result<(), Error> {
+fn prepare_tensors(manifest: &Manifest) -> Result<Vec<ConvertTensorInfo>, Error> {
+    let mut tensors = Vec::new();
     let mut next_offset = 0;
 
     for (name, value) in &manifest.tensors.entries {
-        if value.tensor_type != "F16" {
+        if value.ty != "F16" {
             bail!("target tensor types other than F16 not supported for conversion currently");
         }
 
@@ -105,11 +141,44 @@ fn prepare_tensors(info: &mut ConvertInfo, manifest: &Manifest) -> Result<(), Er
             dimensions,
             offset: next_offset,
         };
-        info.tensors.push(task);
+        tensors.push(task);
 
         // Figure out the next offset
         next_offset += scalars * 2;
         next_offset = align_offset(next_offset);
+    }
+
+    Ok(tensors)
+}
+
+fn write_header(
+    target: &mut File,
+    metadata: Vec<(String, MetadataValue)>,
+    tensors: &[ConvertTensorInfo],
+) -> Result<(), Error> {
+    println!("writing header");
+
+    let mut header = Header::default();
+
+    header.metadata = metadata;
+    apply_header_tensors(&mut header, tensors)?;
+
+    // Write the prepared header
+    gguf_swiss::write_header(target, &header)?;
+
+    Ok(())
+}
+
+fn apply_header_tensors(header: &mut Header, tensors: &[ConvertTensorInfo]) -> Result<(), Error> {
+    for tensor in tensors {
+        // Record the tensor in the metadata
+        let info = TensorInfo {
+            name: tensor.name.clone(),
+            tensor_type: TensorType::F16,
+            dimensions: tensor.dimensions,
+            offset: tensor.offset,
+        };
+        header.tensors.push(info);
     }
 
     Ok(())
