@@ -112,12 +112,14 @@ fn prepare_metadata(manifest: &Manifest) -> Result<Vec<(String, MetadataValue)>,
             Value::String(value) => MetadataValue::String(value.clone()),
             Value::Number(value) => {
                 // TODO: We need a better solution for different numeric types, which kind it is can
-                //  be important for GGUF
+                //  be important for GGUF. Currently we needed to encode a u32 value, so this is
+                //  assumed for now.
+
                 let Some(value) = value.as_u64() else {
                     bail!("unsupported numeric metadata value for {:?}", key);
                 };
 
-                MetadataValue::UInt64(value)
+                MetadataValue::UInt32(value as u32)
             }
             _ => bail!("unsupported metadata value for {:?}", key),
         };
