@@ -5,7 +5,8 @@
     "general.name": "RWKV5 World 1.5B",
     "general.author": "Recursal AI",
     "general.description": "Soaring past Transformers with 1 Trillion Tokens Across 100+ Languages!",
-    "general.license": "Apache-2.0"
+    "general.license": "Apache-2.0",
+    "rwkv5.context_length": 1048576
   },
   "tokenizer": {
     "source": "rwkv_vocab_v20230424.json",

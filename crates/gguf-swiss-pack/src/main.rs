@@ -1,6 +1,6 @@
-mod convert;
 mod manifest;
 mod safetensors;
+mod tensors;
 
 use std::{collections::HashMap, fs::File, path::PathBuf};
 
@@ -9,10 +9,11 @@ use clap::Parser;
 use gguf_swiss::{
     align_offset, Header, MetadataArray, MetadataValue, TensorDimensions, TensorInfo, TensorType,
 };
+use serde_json::Value;
 
 use crate::{
-    convert::ConvertTensorInfo,
     manifest::{read_manifest, Manifest},
+    tensors::ConvertTensorInfo,
 };
 
 fn main() -> Result<(), Error> {
@@ -80,7 +81,7 @@ fn main() -> Result<(), Error> {
 
     // Perform tensor conversion
     println!("converting tensors");
-    convert::convert(&mut output, &mut tensors_source_file, &tensors)?;
+    tensors::convert(&mut output, &mut tensors_source_file, &tensors)?;
 
     Ok(())
 }
@@ -107,11 +108,20 @@ fn prepare_metadata(manifest: &Manifest) -> Result<Vec<(String, MetadataValue)>,
     let mut metadata = Vec::new();
 
     for (key, value) in &manifest.metadata {
-        let Some(value) = value.as_str() else {
-            bail!("unsupported metadata value for {:?}", key)
+        let value = match value {
+            Value::String(value) => MetadataValue::String(value.clone()),
+            Value::Number(value) => {
+                // TODO: We need a better solution for different numeric types, which kind it is can
+                //  be important for GGUF
+                let Some(value) = value.as_u64() else {
+                    bail!("unsupported numeric metadata value for {:?}", key);
+                };
+
+                MetadataValue::UInt64(value)
+            }
+            _ => bail!("unsupported metadata value for {:?}", key),
         };
 
-        let value = MetadataValue::String(value.to_string());
         metadata.push((key.clone(), value));
     }
 
