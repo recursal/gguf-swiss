@@ -25,8 +25,12 @@ pub fn read_header(reader: &mut impl Read) -> Result<Header, Error> {
     }
 
     // Validate we're reading a supported version
+    // Currently, only 2 and 3 are supported. These versions are mostly identical except for that
+    // version 3 can hypothetically contain big-endian values (but has no mechanism for indicating
+    // this, so for now we just ignore this).
+    // Version 1 has 32-bit counts, and will require more work to support if desired.
     let gguf_version = read_u32(reader)?;
-    if gguf_version != 3 {
+    if gguf_version != 3 && gguf_version != 2 {
         bail!("unsupported gguf version: {}", gguf_version);
     }
 
