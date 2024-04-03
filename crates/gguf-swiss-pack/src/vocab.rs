@@ -5,8 +5,17 @@ pub fn parse_vocab(raw: &str) -> Result<Vec<Vec<u8>>, Error> {
 
     for line in raw.lines() {
         let token = parse_vocab_line(line)?;
+
         if token.is_empty() {
             bail!("empty tokens not allowed");
+        }
+
+        // Annoying special case, this should never be hit in llama.cpp, but is technically a token
+        // in RWKV vocab. llama.cpp doesn't handle nulls in tokens well, so just replace it with a
+        // placeholder.
+        if token == [0] {
+            vocab.push(b"<null>".to_vec());
+            continue;
         }
 
         vocab.push(token);
