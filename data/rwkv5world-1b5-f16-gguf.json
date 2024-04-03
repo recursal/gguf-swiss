@@ -6,10 +6,17 @@
     "general.author": "Recursal AI",
     "general.description": "Soaring past Transformers with 1 Trillion Tokens Across 100+ Languages!",
     "general.license": "Apache-2.0",
-    "rwkv5.context_length": 1048576
+    "rwkv5.context_length": 1048576,
+    "rwkv5.embedding_length": 2048,
+    "rwkv5.block_count": 24,
+    "# comment": "the following values are placeholder but necessary by llama.cpp, this entire format is up for a refactor/refresh",
+    "rwkv5.feed_forward_length": 1,
+    "rwkv5.attention.head_count": 1,
+    "rwkv5.attention.head_count_kv": 1,
+    "rwkv5.attention.layer_norm_epsilon": 0.00001
   },
   "tokenizer": {
-    "source": "rwkv_vocab_v20230424.json",
+    "source": "vocab.txt",
     "type": "rwkv"
   },
   "tensors": {

@@ -15,7 +15,7 @@ pub fn write_metadata_entry(
     key: &str,
     value: &MetadataValue,
 ) -> Result<(), Error> {
-    write_string(writer, key)?;
+    write_string(writer, key.as_bytes())?;
 
     // Write the type
     let ty = value.ty();
@@ -57,7 +57,7 @@ fn write_array(writer: &mut impl Write, value: &MetadataArray) -> Result<(), Err
         MetadataArray::Float32(value) => array_inner(writer, write_f32, value)?,
         MetadataArray::Bool(value) => array_inner(writer, write_bool, value)?,
         MetadataArray::String(value) => {
-            let value: Vec<_> = value.iter().map(|v| v.as_str()).collect();
+            let value: Vec<_> = value.iter().map(|v| v.as_slice()).collect();
             array_inner(writer, write_string, &value)?
         }
         MetadataArray::Array(_) => {

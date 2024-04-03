@@ -13,6 +13,7 @@ use crate::{
 
 pub fn read_metadata_entry(reader: &mut impl Read) -> Result<(String, MetadataValue), Error> {
     let key = read_string(reader)?;
+    let key = String::from_utf8(key).context("key not valid utf-8")?;
 
     let type_index = read_u32(reader)?;
     let ty = MetadataType::from_u32(type_index).context("invalid type")?;

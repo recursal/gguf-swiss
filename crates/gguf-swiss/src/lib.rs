@@ -1,3 +1,11 @@
+//! GGUF Swiss Army Knife
+//!
+//! ## UTF-8 Strings (or lack thereof)
+//!
+//! While the GGUF String type in theory should be valid UTF-8, in practice we need to represent
+//! partial codepoints. Partial codepoints are not valid UTF-8, but are necessary for some
+//! tokenizers. For this reason strings in this library are represented as byte sequences.
+
 mod dimensions;
 mod metadata;
 mod read;

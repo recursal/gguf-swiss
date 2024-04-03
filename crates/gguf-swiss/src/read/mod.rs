@@ -66,6 +66,7 @@ pub fn read_header(reader: &mut impl Read) -> Result<Header, Error> {
 
 fn read_tensor_info(reader: &mut impl Read) -> Result<TensorInfo, Error> {
     let name = read_string(reader)?;
+    let name = String::from_utf8(name).context("name not valid utf-8")?;
 
     // Read the tensor dimensions
     let dimensions_count = read_u32(reader)? as usize;

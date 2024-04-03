@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use anyhow::{bail, Context, Error};
+use anyhow::{bail, Error};
 
 pub fn read_u8(reader: &mut impl Read) -> Result<u8, Error> {
     let mut bytes = [0u8; 1];
@@ -94,7 +94,7 @@ pub fn read_bool(reader: &mut impl Read) -> Result<bool, Error> {
     Ok(read_u8(reader)? != 0)
 }
 
-pub fn read_string(reader: &mut impl Read) -> Result<String, Error> {
+pub fn read_string(reader: &mut impl Read) -> Result<Vec<u8>, Error> {
     let length = read_u64(reader)? as usize;
 
     if length > 65535 {
@@ -104,6 +104,5 @@ pub fn read_string(reader: &mut impl Read) -> Result<String, Error> {
     let mut bytes = vec![0u8; length];
     reader.read_exact(&mut bytes)?;
 
-    let value = String::from_utf8(bytes).context("invalid string: not ascii")?;
-    Ok(value)
+    Ok(bytes)
 }

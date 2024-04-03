@@ -1,20 +1,18 @@
 mod manifest;
 mod safetensors;
 mod tensors;
+mod vocab;
 
-use std::{collections::HashMap, fs::File, path::PathBuf};
+use std::{fs::File, path::PathBuf};
 
 use anyhow::{bail, Context, Error};
 use clap::Parser;
 use gguf_swiss::{
     align_offset, Header, MetadataArray, MetadataValue, TensorDimensions, TensorInfo, TensorType,
 };
-use serde_json::Value;
+use serde_json::{Number, Value};
 
-use crate::{
-    manifest::{read_manifest, Manifest},
-    tensors::ConvertTensorInfo,
-};
+use crate::{manifest::Manifest, tensors::ConvertTensorInfo};
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
@@ -31,7 +29,8 @@ fn main() -> Result<(), Error> {
     }
 
     println!("loading manifest");
-    let manifest = read_manifest(&manifest_path).context("failed to load packaging manifest")?;
+    let manifest =
+        manifest::read_manifest(&manifest_path).context("failed to load packaging manifest")?;
 
     // Prepare output file
     let mut output = File::create(&args.output)?;
@@ -48,28 +47,16 @@ fn main() -> Result<(), Error> {
     let mut metadata = prepare_metadata(&manifest)?;
     let tensors = prepare_tensors(&manifest)?;
 
-    // Load tokenizer
+    // Load tokenizer/vocab file
     println!("loading tokenizer");
     let vocab_file_path = model_path.join(&manifest.tokenizer.source);
-    let vocab_file = File::open(&vocab_file_path).context("failed to open tokenizer source")?;
-    let vocab_map: HashMap<String, u64> =
-        serde_json::from_reader(vocab_file).context("failed to parse tokenizer source")?;
-
-    // Convert vocab to flat list
-    let max_index = vocab_map
-        .values()
-        .cloned()
-        .max()
-        .context("no entries in vocab")?;
-    let mut vocab = vec![String::new(); max_index as usize];
-    for (token, index) in vocab_map {
-        vocab[index as usize - 1] = token;
-    }
+    let vocab_raw = std::fs::read_to_string(&vocab_file_path).context("failed to open vocab")?;
+    let vocab = vocab::parse_vocab(&vocab_raw)?;
 
     // Insert tokenizer into metadata
     metadata.push((
         "tokenizer.ggml.model".to_string(),
-        MetadataValue::String("rwkv".to_string()),
+        MetadataValue::String(b"rwkv".to_vec()),
     ));
     metadata.push((
         "tokenizer.ggml.tokens".to_string(),
@@ -109,18 +96,8 @@ fn prepare_metadata(manifest: &Manifest) -> Result<Vec<(String, MetadataValue)>,
 
     for (key, value) in &manifest.metadata {
         let value = match value {
-            Value::String(value) => MetadataValue::String(value.clone()),
-            Value::Number(value) => {
-                // TODO: We need a better solution for different numeric types, which kind it is can
-                //  be important for GGUF. Currently we needed to encode a u32 value, so this is
-                //  assumed for now.
-
-                let Some(value) = value.as_u64() else {
-                    bail!("unsupported numeric metadata value for {:?}", key);
-                };
-
-                MetadataValue::UInt32(value as u32)
-            }
+            Value::String(value) => MetadataValue::String(value.as_bytes().to_vec()),
+            Value::Number(value) => convert_number_value(key, value)?,
             _ => bail!("unsupported metadata value for {:?}", key),
         };
 
@@ -128,6 +105,22 @@ fn prepare_metadata(manifest: &Manifest) -> Result<Vec<(String, MetadataValue)>,
     }
 
     Ok(metadata)
+}
+
+fn convert_number_value(key: &str, value: &Number) -> Result<MetadataValue, Error> {
+    // TODO: We need a better solution for different numeric types, which kind it is can
+    //  be important for GGUF. Currently we needed to encode u32 and f32 values, so this
+    //  is assumed for now.
+
+    if let Some(value) = value.as_u64() {
+        return Ok(MetadataValue::UInt32(value as u32));
+    };
+
+    if let Some(value) = value.as_f64() {
+        return Ok(MetadataValue::Float32(value as f32));
+    };
+
+    bail!("unsupported numeric metadata value for {:?}", key);
 }
 
 fn prepare_tensors(manifest: &Manifest) -> Result<Vec<ConvertTensorInfo>, Error> {

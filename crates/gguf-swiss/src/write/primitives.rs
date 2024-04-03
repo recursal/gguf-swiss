@@ -76,13 +76,13 @@ pub fn write_bool(writer: &mut impl Write, value: bool) -> Result<(), Error> {
     write_u8(writer, value as u8)
 }
 
-pub fn write_string(writer: &mut impl Write, data: &str) -> Result<(), Error> {
-    if data.bytes().len() > 65535 {
+pub fn write_string(writer: &mut impl Write, data: &[u8]) -> Result<(), Error> {
+    if data.len() > 65535 {
         bail!("invalid string: too long");
     }
 
-    write_u64(writer, data.bytes().len() as u64)?;
-    writer.write_all(data.as_bytes())?;
+    write_u64(writer, data.len() as u64)?;
+    writer.write_all(data)?;
 
     Ok(())
 }

@@ -34,7 +34,7 @@ pub fn write_header(writer: &mut impl Write, header: &Header) -> Result<(), Erro
 }
 
 fn write_tensor_info(writer: &mut impl Write, value: &TensorInfo) -> Result<(), Error> {
-    write_string(writer, &value.name)?;
+    write_string(writer, value.name.as_bytes())?;
 
     write_u32(writer, value.dimensions.count() as u32)?;
     for i in 0..value.dimensions.count() {
