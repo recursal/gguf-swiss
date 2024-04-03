@@ -15,13 +15,14 @@ fn main() -> Result<(), Error> {
     let Some(MetadataValue::String(architecture)) = architecture else {
         bail!("required key \"general.architecture\" missing from model")
     };
+    let architecture = String::from_utf8(architecture.clone())?;
 
     // Extract important information KVs
-    let name = get_metadata(&header, "general.name", "");
-    let author = get_metadata(&header, "general.author", "");
-    let url = get_metadata(&header, "general.url", "");
-    let description = get_metadata(&header, "general.description", "");
-    let license = get_metadata(&header, "general.license", "");
+    let name = get_metadata(&header, "general.name", "")?;
+    let author = get_metadata(&header, "general.author", "")?;
+    let url = get_metadata(&header, "general.url", "")?;
+    let description = get_metadata(&header, "general.description", "")?;
+    let license = get_metadata(&header, "general.license", "")?;
 
     // Print information
     println!("# {} - GGUF Model Information", name);
@@ -73,16 +74,17 @@ const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-fn get_metadata(header: &Header, key: &str, default: &str) -> String {
+fn get_metadata(header: &Header, key: &str, default: &str) -> Result<String, Error> {
     let Some(value) = header.find_metadata(key) else {
-        return default.to_string();
+        return Ok(default.to_string());
     };
 
     let MetadataValue::String(value) = value else {
-        return default.to_string();
+        return Ok(default.to_string());
     };
 
-    value.clone()
+    let value = String::from_utf8(value.clone())?;
+    Ok(value)
 }
 
 fn format_value(value: &MetadataValue) -> String {
