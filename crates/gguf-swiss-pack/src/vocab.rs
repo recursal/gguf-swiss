@@ -4,19 +4,13 @@ pub fn parse_vocab(raw: &str) -> Result<Vec<Vec<u8>>, Error> {
     let mut vocab = Vec::new();
 
     for line in raw.lines() {
-        let token = parse_vocab_line(line)?;
+        let mut token = parse_vocab_line(line)?;
 
         if token.is_empty() {
             bail!("empty tokens not allowed");
         }
 
-        // Annoying special case, this should never be hit in llama.cpp, but is technically a token
-        // in RWKV vocab. llama.cpp doesn't handle nulls in tokens well, so just replace it with a
-        // placeholder.
-        if token == [0] {
-            vocab.push(b"<null>".to_vec());
-            continue;
-        }
+        llamacpp_byte_workaround(&mut token);
 
         vocab.push(token);
     }
@@ -50,8 +44,6 @@ fn unescape(value: &str) -> Result<Vec<u8>, Error> {
     let mut hex_value = String::new();
 
     for c in value.chars() {
-        // If we were previously encoding hex, but aren't anymore, and we don't have another hex
-
         if hexing != 0 {
             hex_value.push(c);
             hexing -= 1;
@@ -94,4 +86,23 @@ fn unescape(value: &str) -> Result<Vec<u8>, Error> {
     }
 
     Ok(output)
+}
+
+/// llama.cpp doesn't handle byte tokens that are not valid UTF-8 correctly, for now we encode these
+/// using raw escape codes. This is very fragile and makes assumptions about the tokenizer to avoid
+/// these going into the input, but for now this is the only way to solve this.
+fn llamacpp_byte_workaround(token: &mut Vec<u8>) {
+    if token.len() != 1 {
+        return;
+    }
+    let value = token[0];
+
+    if value == 0 {
+        *token = b"\\x00".to_vec();
+    }
+
+    if value >= 0b1000_0000 {
+        let formatted = format!("\\x{:02x}", value);
+        *token = formatted.into_bytes();
+    }
 }
