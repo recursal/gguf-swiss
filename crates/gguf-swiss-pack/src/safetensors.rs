@@ -7,9 +7,6 @@ use std::{
 use anyhow::{Context, Error};
 use serde_json::Value;
 
-// TODO: This module should not export anything other than a source processing function.
-//  Specifics about the safetensors format aren't relevant for the core processing code.
-
 pub fn read_header(file: &mut File) -> Result<StHeader, Error> {
     file.seek(SeekFrom::Start(0))?;
 

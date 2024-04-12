@@ -21,7 +21,7 @@ $ gguf-swiss-info model.gguf
 > Expect the manifest file format to change frequently, and bugs in model output.
 >
 > The development goal of this utility is to convert RWKV models to GGUF format for llama.cpp.
-> However, this utility can convert tensors from any safetensors format model.
+> However, this utility can be extended to convert tensors from any safetensors format model.
 
 Model packaging utility.
 Converts model files to GGUF.
@@ -30,8 +30,8 @@ Converts model files to GGUF.
 
 ```
 $ gguf-swiss-pack \
-    --manifest manifest.json \
-    --model /source/model/directory \
+    --manifest manifest.toml \
+    --source /source/root/directory \
     model.gguf
 ```
 

@@ -10,4 +10,5 @@ clap = { workspace = true, features = ["derive"] }
 half.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+toml.workspace = true
 gguf-swiss.workspace = true
