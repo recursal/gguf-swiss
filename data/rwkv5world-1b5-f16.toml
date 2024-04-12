@@ -19,8 +19,8 @@ context_length = 1048576
 
 # These are set to placeholders for now
 feed_forward_length = 1
-head_count = 1
-head_count_kv = 1
+attention_head_count = 1
+attention_head_count_kv = 1
 
 [tasks.tokenizer]
 task = "convert-rwkv-tokenizer"

@@ -117,6 +117,11 @@ impl ProcessContext {
         self.push_metadata_value(key, MetadataValue::String(value));
     }
 
+    fn push_metadata_u32(&mut self, key: &str, value: u32) {
+        self.push_metadata_value(key, MetadataValue::UInt32(value));
+    }
+
+    #[allow(dead_code)]
     fn push_metadata_u64(&mut self, key: &str, value: u64) {
         self.push_metadata_value(key, MetadataValue::UInt64(value));
     }
