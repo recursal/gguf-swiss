@@ -31,7 +31,6 @@ impl PackTask for AddLlamaConfigTask {
         ctx.push_metadata_u32("rwkv5.block_count", m.block_count);
         ctx.push_metadata_u32("rwkv5.feed_forward_length", m.feed_forward_length);
         ctx.push_metadata_u32("rwkv5.attention.head_count", m.attention_head_count);
-        ctx.push_metadata_u32("rwkv5.attention.head_count_kv", m.attention_head_count_kv);
         ctx.push_metadata_f64("rwkv5.layer_norm_epsilon", m.layer_norm_epsilon);
 
         Ok(())
@@ -49,8 +48,6 @@ struct AddLlamaConfigManifest {
     pub feed_forward_length: u32,
 
     pub attention_head_count: u32,
-
-    pub attention_head_count_kv: u32,
 
     pub layer_norm_epsilon: f64,
 }

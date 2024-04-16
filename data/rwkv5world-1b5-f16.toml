@@ -17,10 +17,9 @@ layer_norm_epsilon = 0.00001
 # RWKV isn't context limited, but a context length is required
 context_length = 1048576
 
-# These are set to placeholders for now
-feed_forward_length = 1
-attention_head_count = 1
-attention_head_count_kv = 1
+# Required by llama.cpp, but we don't use them
+feed_forward_length = 0
+attention_head_count = 0
 
 [tasks.tokenizer]
 task = "convert-rwkv-tokenizer"
