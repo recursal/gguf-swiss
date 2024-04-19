@@ -33,6 +33,10 @@ impl PackTask for AddLlamaConfigTask {
         ctx.push_metadata_u32("rwkv5.attention.head_count", m.attention_head_count);
         ctx.push_metadata_f64("rwkv5.layer_norm_epsilon", m.layer_norm_epsilon);
 
+        // TODO: Configurable, these are placeholders
+        ctx.push_metadata_u32("rwkv5.ssm.state_size", 1);
+        ctx.push_metadata_u32("rwkv5.ssm.inner_size", 1);
+
         Ok(())
     }
 }
