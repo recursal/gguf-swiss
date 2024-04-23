@@ -28,7 +28,6 @@ impl PackTask for AddModelCardTask {
         ctx.push_metadata_str("general.author", &m.author);
         ctx.push_metadata_str("general.description", &m.description);
         ctx.push_metadata_str("general.license", &m.license);
-        ctx.push_metadata_str("general.architecture", &m.architecture);
 
         Ok(())
     }
@@ -43,6 +42,4 @@ struct AddModelCardManifest {
     pub description: String,
 
     pub license: String,
-
-    pub architecture: String,
 }

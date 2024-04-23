@@ -9,12 +9,12 @@ use gguf_swiss::{MetadataValue, TensorInfo};
 use toml::Table;
 
 use crate::tasks::{
-    add_llama_config::AddLlamaConfigTask, add_model_card::AddModelCardTask,
+    add_model_card::AddModelCardTask, add_model_config::AddModelConfigTask,
     convert_rwkv_tokenizer::ConvertRwkvTokenizerTask, convert_safetensors::ConvertSafetensorsTask,
 };
 
-mod add_llama_config;
 mod add_model_card;
+mod add_model_config;
 mod convert_rwkv_tokenizer;
 mod convert_safetensors;
 
@@ -42,7 +42,7 @@ fn load_task(key: &str, manifest: &Table) -> Result<TaskEntry, Error> {
 
     let task: Box<dyn PackTask> = match name.as_str() {
         "add-model-card" => Box::new(AddModelCardTask::new(manifest)?),
-        "add-llama-config" => Box::new(AddLlamaConfigTask::new(manifest)?),
+        "add-model-config" => Box::new(AddModelConfigTask::new(manifest)?),
         "convert-rwkv-tokenizer" => Box::new(ConvertRwkvTokenizerTask::new(manifest)?),
         "convert-safetensors" => Box::new(ConvertSafetensorsTask::new(manifest)?),
         value => bail!("unknown task type \"{}\"", value),
@@ -112,25 +112,25 @@ impl ProcessContext {
         &self.source_root
     }
 
-    fn push_metadata_str(&mut self, key: &str, value: &str) {
+    fn push_metadata_str(&mut self, key: impl ToString, value: &str) {
         let value = value.as_bytes().to_vec();
         self.push_metadata_value(key, MetadataValue::String(value));
     }
 
-    fn push_metadata_u32(&mut self, key: &str, value: u32) {
+    fn push_metadata_u32(&mut self, key: impl ToString, value: u32) {
         self.push_metadata_value(key, MetadataValue::UInt32(value));
     }
 
     #[allow(dead_code)]
-    fn push_metadata_u64(&mut self, key: &str, value: u64) {
+    fn push_metadata_u64(&mut self, key: impl ToString, value: u64) {
         self.push_metadata_value(key, MetadataValue::UInt64(value));
     }
 
-    fn push_metadata_f64(&mut self, key: &str, value: f64) {
-        self.push_metadata_value(key, MetadataValue::Float64(value));
+    fn push_metadata_f32(&mut self, key: impl ToString, value: f32) {
+        self.push_metadata_value(key, MetadataValue::Float32(value));
     }
 
-    fn push_metadata_value(&mut self, key: &str, value: MetadataValue) {
+    fn push_metadata_value(&mut self, key: impl ToString, value: MetadataValue) {
         self.metadata.push((key.to_string(), value));
     }
 }

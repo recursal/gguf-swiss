@@ -8,7 +8,7 @@ use anyhow::{bail, Error};
 /// All not used dimensions will be zero, which tensor dimensions normally cannot be.
 ///
 /// The order of dimensions in GGUF is `Width x Height x Channel x Batch`.
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, PartialEq, Clone, Copy)]
 pub struct TensorDimensions(pub [u64; 4]);
 
 impl TensorDimensions {

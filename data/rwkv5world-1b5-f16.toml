@@ -6,10 +6,10 @@ name = "RWKV5 World 1.5B"
 author = "Recursal AI"
 description = "Soaring past Transformers with 1 Trillion Tokens Across 100+ Languages!"
 license = "Apache-2.0"
-architecture = "rwkv5"
 
-[tasks.config]
-task = "add-llama-config"
+[tasks.model-config]
+task = "add-model-config"
+architecture = "rwkv5"
 embedding_length = 2048
 block_count = 24
 layer_norm_epsilon = 0.00001
@@ -104,3 +104,8 @@ source = "model.safetensors"
 
 "blk.23.attn_norm.weight" = { source = "rwkv.blocks.23.ln1.weight", type = "F16", dimensions = [2048] }
 "blk.23.attn_norm.bias" = { source = "rwkv.blocks.23.ln1.bias", type = "F16", dimensions = [2048] }
+
+"output_norm.weight" = { source = "rwkv.ln_out.weight", type = "F16", dimensions = [2048] }
+"output_norm.bias" = { source = "rwkv.ln_out.bias", type = "F16", dimensions = [2048] }
+
+"output.weight" = { source = "head.weight", type = "F16", dimensions = [2048, 65536] }

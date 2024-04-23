@@ -161,7 +161,7 @@ fn read_source_scalars(
     let scalars_len = tensor.dimensions.total();
 
     assert_eq!(source_info.data_type, "BF16");
-    assert_eq!(source_dimensions.total(), scalars_len);
+    assert_eq!(source_dimensions, tensor.dimensions);
 
     // Prepare buffer for the source data
     let mut data = vec![0u8; scalars_len as usize * 2];
