@@ -40,9 +40,13 @@ impl PackTask for ConvertSafetensorsTask {
         let mut next_offset = 0;
 
         for (name, value) in &self.manifest.tensors {
-            if value.ty != "F16" {
-                bail!("target tensor types other than F16 not supported for conversion currently");
-            }
+            let (tensor_type, scalar_size) = match value.ty.as_str() {
+                "F16" => (TensorType::F16, 2),
+                "F32" => (TensorType::F32, 4),
+                _ => {
+                    bail!("target tensor types other than F16 or F32 not supported for conversion currently");
+                }
+            };
 
             // Convert from manifest dimensions to gguf-swiss
             let mut dimensions = TensorDimensions::default();
@@ -57,20 +61,21 @@ impl PackTask for ConvertSafetensorsTask {
                 source: value.source.clone(),
                 dimensions,
                 offset: next_offset,
+                ty: tensor_type,
             };
             self.tensors.push(tensor_info);
 
             // Record tensor entry
             let value = TensorInfo {
                 name: name.clone(),
-                tensor_type: TensorType::F16,
+                tensor_type,
                 dimensions,
                 offset: next_offset,
             };
             ctx.tensors.push(value);
 
             // Figure out the next offset
-            next_offset += scalars * 2;
+            next_offset += scalars * scalar_size;
             next_offset = align_offset(next_offset);
         }
 
@@ -192,14 +197,12 @@ fn write_scalars(
     tensor: &ConvertTensorInfo,
     scalars: Vec<f32>,
 ) -> Result<(), Error> {
-    // Convert to target format (just f16 for now)
-    // TODO: One at a time is inefficient
-    let scalars_len = tensor.dimensions.total();
-    let mut target_data = vec![0u8; scalars_len as usize * 2];
-    for (i, target_bytes) in target_data.chunks_mut(2).enumerate() {
-        let value = half::f16::from_f32(scalars[i]);
-        target_bytes.copy_from_slice(&value.to_le_bytes());
-    }
+    // Convert to target format
+    let data = match tensor.ty {
+        TensorType::F16 => encode_values_f16(&scalars),
+        TensorType::F32 => encode_values_f32(&scalars),
+        _ => bail!("unexpected tensor type"),
+    };
 
     // Pad if necessary
     let position = write_padding(target)?;
@@ -208,9 +211,35 @@ fn write_scalars(
     assert_eq!(position, data_start + tensor.offset);
 
     // Write the converted data
-    target.write_all(&target_data)?;
+    target.write_all(&data)?;
 
     Ok(())
+}
+
+fn encode_values_f16(scalars: &[f32]) -> Vec<u8> {
+    // TODO: One at a time is inefficient
+
+    let mut data = vec![0u8; scalars.len() * 2];
+
+    for (i, bytes) in data.chunks_mut(2).enumerate() {
+        let value = half::f16::from_f32(scalars[i]);
+        bytes.copy_from_slice(&value.to_le_bytes());
+    }
+
+    data
+}
+
+fn encode_values_f32(scalars: &[f32]) -> Vec<u8> {
+    // TODO: One at a time is inefficient
+
+    let mut data = vec![0u8; scalars.len() * 4];
+
+    for (i, bytes) in data.chunks_mut(4).enumerate() {
+        let value = scalars[i];
+        bytes.copy_from_slice(&value.to_le_bytes());
+    }
+
+    data
 }
 
 pub struct ConvertTensorInfo {
@@ -218,4 +247,5 @@ pub struct ConvertTensorInfo {
     pub source: String,
     pub dimensions: TensorDimensions,
     pub offset: u64,
+    pub ty: TensorType,
 }
