@@ -37,9 +37,8 @@ impl ConvertSafetensorsTask {
         let mut values = Vec::new();
 
         for (name, value) in &self.manifest.tensors {
-            if name.starts_with("$") {
-                let remainder = &name[1..];
-                let (start_s, end_s) = remainder
+            if let Some(mac) = name.strip_prefix('$') {
+                let (start_s, end_s) = mac
                     .split_once("..")
                     .context("unable to split expansion macro")?;
                 let start: usize = start_s.parse().context("unable to parse expansion macro")?;
@@ -55,8 +54,8 @@ impl ConvertSafetensorsTask {
 
                     for i in start..end {
                         let is = i.to_string();
-                        let target_name = name.replace("$", &is);
-                        let source_name = manifest.source.replace("$", &is);
+                        let target_name = name.replace('$', &is);
+                        let source_name = manifest.source.replace('$', &is);
 
                         values.push((target_name, source_name, manifest.clone()));
                     }
@@ -156,7 +155,7 @@ impl PackTask for ConvertSafetensorsTask {
                 data_start,
                 &mut tensors_source_file,
                 &source_header,
-                &tensor,
+                tensor,
             )?;
         }
 

@@ -25,8 +25,7 @@ impl PackTask for ConvertRwkvTokenizerTask {
     fn process(&mut self, ctx: &mut ProcessContext) -> Result<(), Error> {
         // Load tokenizer/vocab file
         let vocab_file_path = ctx.source_root().join(&self.manifest.source);
-        let vocab_raw =
-            std::fs::read_to_string(&vocab_file_path).context("failed to open vocab")?;
+        let vocab_raw = std::fs::read_to_string(vocab_file_path).context("failed to open vocab")?;
         let mut vocab = parse_vocab(&vocab_raw)?;
 
         // Generate a token type map, to tell llama.cpp which ones need to actually be matched in
@@ -87,7 +86,7 @@ pub fn parse_vocab(raw: &str) -> Result<Vec<Vec<u8>>, Error> {
 fn parse_vocab_line(line: &str) -> Result<Vec<u8>, Error> {
     // Trim start and end quotations
     if !(line.starts_with("b'") || line.starts_with("b\""))
-        || !(line.ends_with("'") || line.ends_with("\""))
+        || !(line.ends_with('\'') || line.ends_with('"'))
     {
         bail!("invalid tokenizer format");
     }

@@ -39,6 +39,7 @@ pub fn read_header(file: &mut File) -> Result<StHeader, Error> {
     Ok(value)
 }
 
+#[allow(clippy::get_first)]
 fn parse_entry(name: String, entry: Value) -> Result<(String, StTensorInfo), Error> {
     let data_type = entry
         .get("dtype")

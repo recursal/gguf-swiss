@@ -98,7 +98,7 @@ fn format_value(value: &MetadataValue) -> String {
         MetadataValue::Float32(value) => value.to_string(),
         MetadataValue::Bool(value) => value.to_string(),
         MetadataValue::String(value) => {
-            let value = String::from_utf8_lossy(&value);
+            let value = String::from_utf8_lossy(value);
             format!("{:?}", value)
         }
         MetadataValue::Array(value) => format!("[{:?}; {}]", value.ty(), value.len()),

@@ -2,7 +2,10 @@ mod manifest;
 mod safetensors;
 mod tasks;
 
-use std::{fs::File, path::PathBuf};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{bail, Context, Error};
 use clap::Parser;
@@ -56,7 +59,7 @@ struct Args {
 
 fn convert_from_manifest(
     manifest: &Manifest,
-    source_path: &PathBuf,
+    source_path: &Path,
     output: &PathBuf,
 ) -> Result<(), Error> {
     // Load and process tasks
@@ -80,10 +83,7 @@ fn write_header(
 ) -> Result<(), Error> {
     println!("writing header");
 
-    let mut header = Header::default();
-
-    header.metadata = metadata;
-    header.tensors = tensors;
+    let header = Header { metadata, tensors };
 
     // Write the prepared header
     gguf_swiss::write_header(target, &header)?;

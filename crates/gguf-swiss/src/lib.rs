@@ -109,5 +109,5 @@ impl TensorType {
 /// Just to be safe, this is hardcoded to align to 32 for now, which is the GGUF default if nothing
 /// else is specified.
 pub fn align_offset(offset: u64) -> u64 {
-    return offset + (32 - (offset % 32)) % 32;
+    offset + (32 - (offset % 32)) % 32
 }
