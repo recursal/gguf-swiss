@@ -32,80 +32,16 @@ source = "model.safetensors"
 
 [tasks.safetensors.tensors]
 "token_embd.weight" = { source = "rwkv.embeddings.weight", type = "F16", dimensions = [2048, 65536] }
+"tok_norm.weight" = { source = "rwkv.blocks.0.pre_ln.weight", type = "F32", dimensions = [2048] }
+"tok_norm.bias" = { source = "rwkv.blocks.0.pre_ln.bias", type = "F32", dimensions = [2048] }
 
-"blk.0.attn_norm.weight" = { source = "rwkv.blocks.0.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.0.attn_norm.bias" = { source = "rwkv.blocks.0.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.1.attn_norm.weight" = { source = "rwkv.blocks.1.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.1.attn_norm.bias" = { source = "rwkv.blocks.1.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.2.attn_norm.weight" = { source = "rwkv.blocks.2.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.2.attn_norm.bias" = { source = "rwkv.blocks.2.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.3.attn_norm.weight" = { source = "rwkv.blocks.3.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.3.attn_norm.bias" = { source = "rwkv.blocks.3.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.4.attn_norm.weight" = { source = "rwkv.blocks.4.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.4.attn_norm.bias" = { source = "rwkv.blocks.4.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.5.attn_norm.weight" = { source = "rwkv.blocks.5.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.5.attn_norm.bias" = { source = "rwkv.blocks.5.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.6.attn_norm.weight" = { source = "rwkv.blocks.6.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.6.attn_norm.bias" = { source = "rwkv.blocks.6.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.7.attn_norm.weight" = { source = "rwkv.blocks.7.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.7.attn_norm.bias" = { source = "rwkv.blocks.7.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.8.attn_norm.weight" = { source = "rwkv.blocks.8.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.8.attn_norm.bias" = { source = "rwkv.blocks.8.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.9.attn_norm.weight" = { source = "rwkv.blocks.9.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.9.attn_norm.bias" = { source = "rwkv.blocks.9.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.10.attn_norm.weight" = { source = "rwkv.blocks.10.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.10.attn_norm.bias" = { source = "rwkv.blocks.10.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.11.attn_norm.weight" = { source = "rwkv.blocks.11.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.11.attn_norm.bias" = { source = "rwkv.blocks.11.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.12.attn_norm.weight" = { source = "rwkv.blocks.12.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.12.attn_norm.bias" = { source = "rwkv.blocks.12.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.13.attn_norm.weight" = { source = "rwkv.blocks.13.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.13.attn_norm.bias" = { source = "rwkv.blocks.13.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.14.attn_norm.weight" = { source = "rwkv.blocks.14.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.14.attn_norm.bias" = { source = "rwkv.blocks.14.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.15.attn_norm.weight" = { source = "rwkv.blocks.15.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.15.attn_norm.bias" = { source = "rwkv.blocks.15.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.16.attn_norm.weight" = { source = "rwkv.blocks.16.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.16.attn_norm.bias" = { source = "rwkv.blocks.16.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.17.attn_norm.weight" = { source = "rwkv.blocks.17.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.17.attn_norm.bias" = { source = "rwkv.blocks.17.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.18.attn_norm.weight" = { source = "rwkv.blocks.18.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.18.attn_norm.bias" = { source = "rwkv.blocks.18.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.19.attn_norm.weight" = { source = "rwkv.blocks.19.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.19.attn_norm.bias" = { source = "rwkv.blocks.19.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.20.attn_norm.weight" = { source = "rwkv.blocks.20.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.20.attn_norm.bias" = { source = "rwkv.blocks.20.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.21.attn_norm.weight" = { source = "rwkv.blocks.21.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.21.attn_norm.bias" = { source = "rwkv.blocks.21.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.22.attn_norm.weight" = { source = "rwkv.blocks.22.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.22.attn_norm.bias" = { source = "rwkv.blocks.22.ln1.bias", type = "F32", dimensions = [2048] }
-
-"blk.23.attn_norm.weight" = { source = "rwkv.blocks.23.ln1.weight", type = "F32", dimensions = [2048] }
-"blk.23.attn_norm.bias" = { source = "rwkv.blocks.23.ln1.bias", type = "F32", dimensions = [2048] }
+"blk.$block.attn_norm.weight" = { source = "rwkv.blocks.$block.ln1.weight", type = "F32", dimensions = [2048] }
+"blk.$block.attn_norm.bias" = { source = "rwkv.blocks.$block.ln1.bias", type = "F32", dimensions = [2048] }
+"blk.$block.time_mix_k" = { source = "rwkv.blocks.$block.attention.time_mix_key", type = "F32", dimensions = [2048, 1, 1] }
+"blk.$block.time_mix_v" = { source = "rwkv.blocks.$block.attention.time_mix_value", type = "F32", dimensions = [2048, 1, 1] }
+"blk.$block.time_mix_r" = { source = "rwkv.blocks.$block.attention.time_mix_receptance", type = "F32", dimensions = [2048, 1, 1] }
+"blk.$block.time_mix_g" = { source = "rwkv.blocks.$block.attention.time_mix_gate", type = "F32", dimensions = [2048, 1, 1] }
 
 "output_norm.weight" = { source = "rwkv.ln_out.weight", type = "F32", dimensions = [2048] }
 "output_norm.bias" = { source = "rwkv.ln_out.bias", type = "F32", dimensions = [2048] }
-
 "output.weight" = { source = "head.weight", type = "F16", dimensions = [2048, 65536] }

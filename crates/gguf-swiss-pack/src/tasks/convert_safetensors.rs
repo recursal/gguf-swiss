@@ -33,50 +33,82 @@ impl ConvertSafetensorsTask {
         };
         Ok(value)
     }
+
+    fn prepare_tensor(
+        &mut self,
+        ctx: &mut ProcessContext,
+        next_offset: &mut u64,
+        manifest: &TensorManifest,
+        target_name: String,
+        source_name: String,
+    ) -> Result<(), Error> {
+        let (tensor_type, scalar_size) = match manifest.ty.as_str() {
+            "F16" => (TensorType::F16, 2),
+            "F32" => (TensorType::F32, 4),
+            _ => {
+                bail!("target tensor types other than F16 or F32 not supported for conversion currently");
+            }
+        };
+
+        // Convert from manifest dimensions to gguf-swiss
+        let mut dimensions = TensorDimensions::default();
+        for (i, value) in manifest.dimensions.iter().enumerate() {
+            dimensions.0[i] = *value;
+        }
+
+        // Record a conversion task
+        let scalars = dimensions.total();
+        let tensor_info = ConvertTensorInfo {
+            name: target_name.clone(),
+            source: source_name,
+            dimensions,
+            offset: *next_offset,
+            ty: tensor_type,
+        };
+        self.tensors.push(tensor_info);
+
+        // Record tensor entry
+        let value = TensorInfo {
+            name: target_name,
+            tensor_type,
+            dimensions,
+            offset: *next_offset,
+        };
+        ctx.tensors.push(value);
+
+        // Figure out the next offset
+        *next_offset += scalars * scalar_size;
+        *next_offset = align_offset(*next_offset);
+
+        Ok(())
+    }
 }
 
 impl PackTask for ConvertSafetensorsTask {
     fn process(&mut self, ctx: &mut ProcessContext) -> Result<(), Error> {
         let mut next_offset = 0;
+        let mut expanded = Vec::new();
 
+        // Expand tensors for blocks (if a tensor name has "$block", it needs to be multiplied)
         for (name, value) in &self.manifest.tensors {
-            let (tensor_type, scalar_size) = match value.ty.as_str() {
-                "F16" => (TensorType::F16, 2),
-                "F32" => (TensorType::F32, 4),
-                _ => {
-                    bail!("target tensor types other than F16 or F32 not supported for conversion currently");
+            if name.contains("$block") {
+                // TODO: Block count shouldn't be hardcoded, maybe instead use "$24" in the name,
+                //  and "$n" in the source name
+                for i in 0..24 {
+                    let is = i.to_string();
+                    let target_name = name.replace("$block", &is);
+                    let source_name = value.source.replace("$block", &is);
+
+                    expanded.push((target_name, source_name, value.clone()));
                 }
-            };
-
-            // Convert from manifest dimensions to gguf-swiss
-            let mut dimensions = TensorDimensions::default();
-            for (i, value) in value.dimensions.iter().enumerate() {
-                dimensions.0[i] = *value;
+            } else {
+                expanded.push((name.clone(), value.source.clone(), value.clone()));
             }
+        }
 
-            // Record a conversion task
-            let scalars = dimensions.total();
-            let tensor_info = ConvertTensorInfo {
-                name: name.clone(),
-                source: value.source.clone(),
-                dimensions,
-                offset: next_offset,
-                ty: tensor_type,
-            };
-            self.tensors.push(tensor_info);
-
-            // Record tensor entry
-            let value = TensorInfo {
-                name: name.clone(),
-                tensor_type,
-                dimensions,
-                offset: next_offset,
-            };
-            ctx.tensors.push(value);
-
-            // Figure out the next offset
-            next_offset += scalars * scalar_size;
-            next_offset = align_offset(next_offset);
+        // Process expanded tensors
+        for (target_name, source_name, value) in expanded {
+            self.prepare_tensor(ctx, &mut next_offset, &value, target_name, source_name)?;
         }
 
         Ok(())
@@ -112,7 +144,7 @@ struct ConvertSafetensorsManifest {
     pub tensors: HashMap<String, TensorManifest>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct TensorManifest {
     pub source: String,
 
