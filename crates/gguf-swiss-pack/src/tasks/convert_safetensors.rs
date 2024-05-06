@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{Read, Seek, SeekFrom, Write},
     path::Path,
@@ -32,6 +31,49 @@ impl ConvertSafetensorsTask {
             tensors: Vec::new(),
         };
         Ok(value)
+    }
+
+    fn expand_tensors(&self) -> Result<Vec<(String, String, TensorManifest)>, Error> {
+        let mut values = Vec::new();
+
+        for (name, value) in &self.manifest.tensors {
+            if name.starts_with("$") {
+                let remainder = &name[1..];
+                let (start_s, end_s) = remainder
+                    .split_once("..")
+                    .context("unable to split expansion macro")?;
+                let start: usize = start_s.parse().context("unable to parse expansion macro")?;
+                let end: usize = end_s.parse().context("unable to parse expansion macro")?;
+
+                let table = value.as_table().context("expansion table must be table")?;
+                for (name, value) in table {
+                    // Parse the manifest
+                    let manifest: TensorManifest = value
+                        .clone()
+                        .try_into()
+                        .context("failed to parse manifest")?;
+
+                    for i in start..end {
+                        let is = i.to_string();
+                        let target_name = name.replace("$", &is);
+                        let source_name = manifest.source.replace("$", &is);
+
+                        values.push((target_name, source_name, manifest.clone()));
+                    }
+                }
+
+                continue;
+            }
+
+            // Parse the manifest
+            let manifest: TensorManifest = value
+                .clone()
+                .try_into()
+                .context("failed to parse manifest")?;
+            values.push((name.clone(), manifest.source.clone(), manifest));
+        }
+
+        Ok(values)
     }
 
     fn prepare_tensor(
@@ -87,24 +129,8 @@ impl ConvertSafetensorsTask {
 impl PackTask for ConvertSafetensorsTask {
     fn process(&mut self, ctx: &mut ProcessContext) -> Result<(), Error> {
         let mut next_offset = 0;
-        let mut expanded = Vec::new();
 
-        // Expand tensors for blocks (if a tensor name has "$block", it needs to be multiplied)
-        for (name, value) in &self.manifest.tensors {
-            if name.contains("$block") {
-                // TODO: Block count shouldn't be hardcoded, maybe instead use "$24" in the name,
-                //  and "$n" in the source name
-                for i in 0..24 {
-                    let is = i.to_string();
-                    let target_name = name.replace("$block", &is);
-                    let source_name = value.source.replace("$block", &is);
-
-                    expanded.push((target_name, source_name, value.clone()));
-                }
-            } else {
-                expanded.push((name.clone(), value.source.clone(), value.clone()));
-            }
-        }
+        let expanded = self.expand_tensors()?;
 
         // Process expanded tensors
         for (target_name, source_name, value) in expanded {
@@ -141,7 +167,7 @@ impl PackTask for ConvertSafetensorsTask {
 #[derive(Deserialize, Debug)]
 struct ConvertSafetensorsManifest {
     pub source: String,
-    pub tensors: HashMap<String, TensorManifest>,
+    pub tensors: Table,
 }
 
 #[derive(Deserialize, Debug, Clone)]
