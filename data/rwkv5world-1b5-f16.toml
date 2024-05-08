@@ -43,7 +43,15 @@ source = "model.safetensors"
 "blk.$.attn_norm.bias" = { source = "rwkv.blocks.$.ln1.bias", type = "F32", dimensions = [2048] }
 "blk.$.attn_norm_2.weight" = { source = "rwkv.blocks.$.ln2.weight", type = "F32", dimensions = [2048] }
 "blk.$.attn_norm_2.bias" = { source = "rwkv.blocks.$.ln2.bias", type = "F32", dimensions = [2048] }
-"blk.$.time_mix_k.weight" = { source = "rwkv.blocks.$.attention.time_mix_key", type = "F32", dimensions = [2048, 1, 1] }
-"blk.$.time_mix_v.weight" = { source = "rwkv.blocks.$.attention.time_mix_value", type = "F32", dimensions = [2048, 1, 1] }
-"blk.$.time_mix_r.weight" = { source = "rwkv.blocks.$.attention.time_mix_receptance", type = "F32", dimensions = [2048, 1, 1] }
-"blk.$.time_mix_g.weight" = { source = "rwkv.blocks.$.attention.time_mix_gate", type = "F32", dimensions = [2048, 1, 1] }
+"blk.$.time_mix_k.weight" = { source = "rwkv.blocks.$.attention.time_mix_key", type = "F16", dimensions = [2048, 1, 1] }
+"blk.$.time_mix_v.weight" = { source = "rwkv.blocks.$.attention.time_mix_value", type = "F16", dimensions = [2048, 1, 1] }
+"blk.$.time_mix_r.weight" = { source = "rwkv.blocks.$.attention.time_mix_receptance", type = "F16", dimensions = [2048, 1, 1] }
+"blk.$.time_mix_g.weight" = { source = "rwkv.blocks.$.attention.time_mix_gate", type = "F16", dimensions = [2048, 1, 1] }
+"blk.$.time_first.weight" = { source = "rwkv.blocks.$.attention.time_faaaa", type = "F16", dimensions = [64, 32] }
+"blk.$.time_decay.weight" = { source = "rwkv.blocks.$.attention.time_decay", type = "F16", dimensions = [64, 32] }
+"blk.$.key.weight" = { source = "rwkv.blocks.$.attention.key.weight", type = "F16", dimensions = [2048, 2048] }
+"blk.$.value.weight" = { source = "rwkv.blocks.$.attention.value.weight", type = "F16", dimensions = [2048, 2048] }
+"blk.$.receptance.weight" = { source = "rwkv.blocks.$.attention.receptance.weight", type = "F16", dimensions = [2048, 2048] }
+"blk.$.gate.weight" = { source = "rwkv.blocks.$.attention.gate.weight", type = "F16", dimensions = [2048, 2048] }
+"blk.$.ln_x.weight" = { source = "rwkv.blocks.$.attention.ln_x.weight", type = "F32", dimensions = [2048] }
+"blk.$.ln_x.bias" = { source = "rwkv.blocks.$.attention.ln_x.bias", type = "F32", dimensions = [2048] }
