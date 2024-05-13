@@ -55,3 +55,4 @@ source = "model.safetensors"
 "blk.$.time_mix.gate.weight" = { source = "rwkv.blocks.$.attention.gate.weight", type = "F16", dimensions = [2048, 2048] }
 "blk.$.time_mix.ln.weight" = { source = "rwkv.blocks.$.attention.ln_x.weight", type = "F32", dimensions = [2048] }
 "blk.$.time_mix.ln.bias" = { source = "rwkv.blocks.$.attention.ln_x.bias", type = "F32", dimensions = [2048] }
+"blk.$.time_mix.output.weight" = { source = "rwkv.blocks.$.attention.output.weight", type = "F16", dimensions = [2048, 2048] }
